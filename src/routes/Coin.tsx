@@ -76,7 +76,7 @@ const Tab = styled.span<{ isActive: boolean }>`
   text-transform: uppercase;
   font-size: 12px;
   font-weight: 400;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: ${(props) => props.theme.bgColor};
   padding: 7px 0px;
   border-radius: 10px;
   color: ${(props) =>
@@ -84,6 +84,12 @@ const Tab = styled.span<{ isActive: boolean }>`
   a {
     display: block;
   }
+`;
+
+const HomeLink = styled(Link)`
+  display: block;
+  text-align: center;
+  margin: 10px 0;
 `;
 
 interface RouteState {
@@ -159,10 +165,10 @@ export const Coin = () => {
   const { isLoading: tickersLoading, data: tickersData } =
     useQuery<ITickersData>(
       ["tickers", coinId],
-      () => fetchCoinTickers(coinId)
-      // {
-      //   refetchInterval: 1000,
-      // }
+      () => fetchCoinTickers(coinId),
+      {
+        refetchInterval: 1000,
+      }
     );
 
   return (
@@ -185,6 +191,7 @@ export const Coin = () => {
             : infoData?.name}
         </Title>
       </Header>
+      <HomeLink to={"/"}>Home</HomeLink>
       {infoLoading || tickersLoading ? (
         <Loader>Loading...</Loader>
       ) : (
