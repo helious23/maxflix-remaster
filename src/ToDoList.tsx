@@ -1,106 +1,71 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { atom, useRecoilState } from "recoil";
+
+interface IToDo {
+  id: number;
+  text: string;
+  category: "TO_DO" | "DOING" | "DONE";
+}
+
+const toDoState = atom<IToDo[]>({
+  key: "toDo",
+  default: [],
+});
 
 interface IForm {
-  email: string;
-  name: string;
-  username: string;
-  password: string;
-  password1: string;
-  extraError?: string;
+  toDo: string;
 }
 
 export const ToDoList = () => {
+  const [toDos, setToDos] = useRecoilState(toDoState);
   const {
     register,
     handleSubmit,
+    setValue,
+    setFocus,
     formState: { errors },
-    setError,
   } = useForm<IForm>({
-    defaultValues: {
-      email: "@naver.com",
-    },
+    mode: "all",
   });
-  const onValid = (data: IForm) => {
-    if (data.password !== data.password1) {
-      setError(
-        "password1",
-        { message: "비밀번호가 일치하지 않습니다" },
-        { shouldFocus: true }
-      );
-    }
-    // setError("extraError", { message: "Server Offline" });
+
+  const onValid = ({ toDo }: IForm) => {
+    setToDos((oldToDos) => [
+      { id: Date.now(), text: toDo, category: "TO_DO" },
+      ...oldToDos,
+    ]);
+    setValue("toDo", "");
   };
-  console.log(errors);
+  console.log(toDos);
+
+  useEffect(() => {
+    setFocus("toDo");
+  }, [setFocus]);
 
   return (
     <div>
-      <form
-        style={{ display: "flex", flexDirection: "column" }}
-        onSubmit={handleSubmit(onValid)}
-      >
+      <h1>To Dos</h1>
+      <hr />
+      <form onSubmit={handleSubmit(onValid)}>
         <input
-          type="email"
-          placeholder="E-mail"
-          {...register("email", {
-            required: "이메일은 필수 항목 입니다",
-            pattern: {
-              value: /^[A-Za-z0-9._%+-]+@naver.com$/,
-              message: "naver@com 이 필요합니다",
-            },
-          })}
-        />
-        <span>{errors?.email?.message}</span>
-        <input
-          type="text"
-          placeholder="Name"
-          {...register("name", {
-            required: "성함은 필수 항목 입니다",
-            validate: {
-              noMax: (value) =>
-                !value.includes("max") || "max 는 포함할수 없습니다",
-            },
-          })}
-        />
-        <span>{errors?.name?.message}</span>
-        <input
-          type="text"
-          placeholder="Username"
-          {...register("username", {
-            required: "사용자명은 필수 항목 입니다",
+          {...register("toDo", {
+            required: "할 일을 입력하세요",
             minLength: {
-              value: 5,
-              message: "사용자명은 5글자 이상이 필요합니다",
+              value: 2,
+              message: "두 글자 이상 입력이 필요합니다",
             },
           })}
-        />
-        <span>{errors?.username?.message}</span>
-        <input
           type="text"
-          placeholder="Password"
-          {...register("password", {
-            required: "비밀번호는 필수 항목 입니다",
-            minLength: {
-              value: 8,
-              message: "비밀번호는 8글자 이상이 필요합니다",
-            },
-          })}
+          placeholder="Write to do..."
         />
-        <span>{errors?.password?.message}</span>
-        <input
-          type="text"
-          placeholder="Confirm Password"
-          {...register("password1", {
-            required: "비밀번호 확인이 필요합니다",
-            minLength: {
-              value: 8,
-              message: "비밀번호는 8글자 이상이 필요합니다",
-            },
-          })}
-        />
-        <span>{errors?.password1?.message}</span>
-        <button>Add</button>
-        <span>{errors?.extraError?.message}</span>
+        <button>add</button>
+        <span>{errors?.toDo?.message}</span>
       </form>
+      <ul>
+        {toDos.map((toDo) => (
+          <li key={toDo.id}>{toDo.text}</li>
+        ))}
+      </ul>
     </div>
   );
 };
