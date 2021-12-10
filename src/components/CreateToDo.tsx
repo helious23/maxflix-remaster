@@ -34,13 +34,7 @@ export const CreateToDo = () => {
   return (
     <form onSubmit={handleSubmit(onValid)}>
       <input
-        {...register("toDo", {
-          required: "할 일을 입력하세요",
-          minLength: {
-            value: 2,
-            message: "두 글자 이상 입력이 필요합니다",
-          },
-        })}
+        {...register("toDo", {})}
         type="text"
         placeholder="Write to do..."
       />
