@@ -33,7 +33,7 @@ const myVars = {
 function App() {
   return (
     <Wrapper>
-      <Box transition={{ type: "spring", bounce: 0.4, delay: 0.3 }} />
+      <Box variants={myVars} initial="start" animate="end" />
     </Wrapper>
   );
 }
