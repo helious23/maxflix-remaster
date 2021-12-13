@@ -10,6 +10,13 @@ const Card = styled.div<{ isDragging: boolean }>`
   margin-bottom: 5px;
   box-shadow: ${(props) =>
     props.isDragging ? "0px 2px 5px rgba(0,0,0,0.3)" : "none"};
+  width: 90%;
+`;
+
+const CardWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-items: center;
 `;
 
 interface IDraggableCardProps {
@@ -21,15 +28,17 @@ interface IDraggableCardProps {
 function DraggableCard({ toDoId, toDoText, index }: IDraggableCardProps) {
   return (
     <Draggable draggableId={toDoId + ""} index={index} key={toDoId}>
-      {(magic, snapshop) => (
-        <Card
-          isDragging={snapshop.isDragging}
-          ref={magic.innerRef}
-          {...magic.draggableProps}
-          {...magic.dragHandleProps}
-        >
-          {toDoText}
-        </Card>
+      {(magic, snapshot) => (
+        <CardWrapper>
+          <Card
+            isDragging={snapshot.isDragging}
+            ref={magic.innerRef}
+            {...magic.draggableProps}
+            {...magic.dragHandleProps}
+          >
+            {toDoText}
+          </Card>
+        </CardWrapper>
       )}
     </Draggable>
   );

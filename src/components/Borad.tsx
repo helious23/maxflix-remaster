@@ -3,7 +3,9 @@ import DraggableCard from "./DraggableCard";
 import styled from "styled-components";
 import { useForm } from "react-hook-form";
 import { IToDo, toDoState } from "../atoms";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
+import { useEffect } from "react";
+import { saveToDos } from "../handle.localstorage";
 
 const Wrapper = styled.div`
   width: 300px;
@@ -59,7 +61,7 @@ interface IForm {
 
 function Board({ toDos, boardId }: IBoardProps) {
   const { register, setValue, handleSubmit } = useForm<IForm>();
-  const setToDos = useSetRecoilState(toDoState);
+  const [toDo, setToDos] = useRecoilState(toDoState);
   const onValid = ({ toDo }: IForm) => {
     const newToDo = {
       id: Date.now(),
@@ -73,6 +75,11 @@ function Board({ toDos, boardId }: IBoardProps) {
     });
     setValue("toDo", "");
   };
+
+  useEffect(() => {
+    saveToDos(toDo);
+  }, [toDo]);
+
   return (
     <Wrapper>
       <Title>{boardId}</Title>

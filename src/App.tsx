@@ -1,8 +1,14 @@
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
 import styled from "styled-components";
-import { toDoState } from "./atoms";
+import { toDoState, defaultToDos } from "./atoms";
 import Board from "./components/Borad";
+import { useEffect } from "react";
+import { loadTodos } from "./handle.localstorage";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { fas } from "@fortawesome/free-solid-svg-icons";
+
+library.add(fas);
 
 const Wrapper = styled.div`
   display: flex;
@@ -23,6 +29,11 @@ const Boards = styled.div`
 
 function App() {
   const [toDos, setToDos] = useRecoilState(toDoState);
+
+  useEffect(() => {
+    setToDos(loadTodos() ?? defaultToDos);
+  }, [setToDos]);
+
   const onDragEnd = (info: DropResult) => {
     const { destination, source } = info;
     if (!destination) return;
@@ -50,6 +61,7 @@ function App() {
       });
     }
   };
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Wrapper>
