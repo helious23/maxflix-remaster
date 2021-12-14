@@ -1,8 +1,8 @@
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
-import { motion } from "framer-motion";
-import { useRef } from "react";
+import { motion, useMotionValue } from "framer-motion";
+import { useEffect } from "react";
 
 library.add(fas);
 
@@ -24,35 +24,12 @@ const Box = styled(motion.div)`
   grid-template-columns: repeat(2, 1fr);
 `;
 
-const BiggerBox = styled.div`
-  width: 600px;
-  height: 600px;
-  background-color: rgba(255, 255, 255, 0.4);
-  border-radius: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-`;
-
-const boxVariants = {
-  hover: { scale: 1.5, rotateZ: 90 },
-  click: { scale: 1, borderRadius: "100px", rotateZ: 0 },
-};
-
 function App() {
-  const biggerBoxRef = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+
   return (
     <Wrapper>
-      <BiggerBox ref={biggerBoxRef}>
-        <Box
-          drag
-          dragSnapToOrigin
-          dragElastic={0.5}
-          dragConstraints={biggerBoxRef}
-          variants={boxVariants}
-        />
-      </BiggerBox>
+      <Box style={{ x }} drag="x" dragSnapToOrigin />
     </Wrapper>
   );
 }
