@@ -1,6 +1,6 @@
 import { createGlobalStyle } from "styled-components";
 
-export const GlobalStyle = createGlobalStyle`
+export const GlobalStyle = createGlobalStyle<{ detail: boolean }>`
 
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -54,9 +54,11 @@ table {
 }
 body {
   font-weight: 300;
-  font-family: 'Source Sans Pro', sans-serif;
-  color:black;
+  font-family: 'Poor Story', 'Source Sans Pro', sans-serif;
+  color:${(props) => props.theme.white.darker};
   line-height: 1.2;
+  background-color: black;
+  overflow: ${(props) => (props.detail ? "hidden" : "auto")};
 }
 a {
   text-decoration:none;
