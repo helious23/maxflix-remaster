@@ -327,7 +327,7 @@ export const Tv = () => {
   // };
 
   const onBoxClicked = (tvId: number) => {
-    history.push(`/tv/${tvId}`);
+    history.push(`/maxflix-remaster/tv/${tvId}`);
     setTimeout(() => setDetail(true), 500); // setDetail 실행 시 애니메이션 효과가 이상해짐
   };
 

@@ -1,8 +1,8 @@
 export const route = {
-  home: "/",
-  tv: "/tv",
-  search: "/search",
-  movieDetail: "/movies/:movieId",
-  tvDetail: "/tv/:tvId",
-  searchDetail: "search/:keywordId",
+  home: "/maxflix-remaster/",
+  tv: "/maxflix-remaster/tv",
+  search: "/maxflix-remaster/search",
+  movieDetail: "/maxflix-remaster/movies/:movieId",
+  tvDetail: "/maxflix-remaster/tv/:tvId",
+  searchDetail: "/maxflix-remaster/search/:keywordId",
 };
