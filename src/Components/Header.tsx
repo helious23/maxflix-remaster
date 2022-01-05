@@ -9,6 +9,8 @@ import {
 import { Link, useRouteMatch, useHistory } from "react-router-dom";
 import { route } from "../Route";
 import { useEffect, useState } from "react";
+import { useRecoilState } from "recoil";
+import { GlobalSearchClose } from "../atom";
 
 const Nav = styled(motion.nav)`
   display: flex;
@@ -120,6 +122,8 @@ interface IForm {
 
 export const Header = () => {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [globalSearchClose, setGlobalSearchClose] =
+    useRecoilState(GlobalSearchClose);
   const homeMatch = useRouteMatch(route.home);
   const tvMatch = useRouteMatch(route.tv);
   const inputAnimation = useAnimation();
@@ -131,14 +135,24 @@ export const Header = () => {
       inputAnimation.start({
         scaleX: 0,
       });
-    } else {
+    } else if (!searchOpen) {
+      setGlobalSearchClose(false);
       inputAnimation.start({
         scaleX: 1,
       });
+      setFocus("keyword");
     }
     setSearchOpen((prev) => !prev);
-    setFocus("keyword");
   };
+
+  useEffect(() => {
+    if (globalSearchClose) {
+      inputAnimation.start({
+        scaleX: 0,
+      });
+      setSearchOpen(false);
+    }
+  }, [globalSearchClose, inputAnimation]);
 
   useEffect(() => {
     scrollY.onChange(() => {

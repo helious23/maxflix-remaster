@@ -1,10 +1,5 @@
 import { useQuery } from "react-query";
-import {
-  getMovies,
-  IGetMovieResult,
-  getMovieDetail,
-  IGetMovieDetailResult,
-} from "../api";
+import { IGetMovieResult, getMovieDetail, IGetMovieDetailResult } from "../api";
 import styled from "styled-components";
 import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
 import { makeImagePath } from "../utils";
@@ -14,7 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { route } from "../Route";
 import { useSetRecoilState } from "recoil";
 import { isDetail } from "../atom";
-import { getTopRatedMovies, DEFAULT_IMG, searchMovie, searchTv } from "../api";
+import { DEFAULT_IMG, searchMovie, searchTv } from "../api";
 import { useLocation } from "react-router";
 
 const Wrapper = styled.div`
