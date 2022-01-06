@@ -1,3 +1,3 @@
 export const makeImagePath = (id: string, format = "original") => {
-  return `https://image.tmdb.org/t/p/${format}/${id}`;
+  return `https://image.tmdb.org/t/p/${format}${id}`;
 };

@@ -58,7 +58,7 @@ body {
   color:${(props) => props.theme.white.darker};
   line-height: 1.2;
   background-color: black;
-  overflow: ${(props) => (props.detail ? "hidden" : "auto")};
+  overflow: ${(props) => (props.detail ? "hidden" : "visible")};
 }
 a {
   text-decoration:none;

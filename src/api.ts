@@ -79,15 +79,19 @@ export interface IGetTvDetailResult {
   vote_count: number;
 }
 
-export const getMovies = () => {
+export const getMovies = (info: any) => {
   return fetch(
-    `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=ko-KR&page=1&region=KR`
+    `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=ko-KR&page=${
+      info.pageParam ?? 1
+    }&region=KR`
   ).then((response) => response.json());
 };
 
-export const getTopRatedMovies = () => {
+export const getTopRatedMovies = (info: any) => {
   return fetch(
-    `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=ko-KR&page=1&region=KR`
+    `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=ko-KR&page=${
+      info.pageParam ?? 1
+    }&region=KR`
   ).then((response) => response.json());
 };
 

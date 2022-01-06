@@ -1,4 +1,4 @@
-import { useQuery } from "react-query";
+import { useInfiniteQuery, useQuery } from "react-query";
 import {
   getMovies,
   IGetMovieResult,
@@ -8,7 +8,7 @@ import {
 import styled from "styled-components";
 import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
 import { makeImagePath } from "../utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, KeyboardEvent } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { route } from "../Route";
@@ -60,18 +60,18 @@ const SliderTitle = styled.div`
   font-size: 1.5rem;
 `;
 
-// const Prev = styled(motion.div)`
-//   height: 80%;
-//   cursor: pointer;
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-//   opacity: 0.3;
-//   position: absolute;
-//   z-index: 10;
-//   left: 1rem;
-//   top: 4rem;
-// `;
+const Prev = styled(motion.div)`
+  height: 80%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.3;
+  position: absolute;
+  z-index: 10;
+  left: 1rem;
+  top: 7rem;
+`;
 
 const Next = styled(motion.div)`
   height: 80%;
@@ -138,7 +138,7 @@ const Overlay = styled(motion.div)`
 const BigMovieDetail = styled(motion.div)`
   position: absolute;
   border-radius: 1rem;
-  overflow: hidden;
+  overflow: auto;
   width: 40vw;
   height: 90vh;
   left: 0;
@@ -159,6 +159,7 @@ const DetailInfo = styled.div`
   position: relative;
   top: -5.5rem;
   padding: 1.5rem 1.5rem 0 1.5rem;
+  height: 65%;
 `;
 
 const DetailHeader = styled.div`
@@ -257,14 +258,28 @@ export const Movies = () => {
   const history = useHistory();
   const bigMovieMatch = useRouteMatch<{ movieId: string }>(route.movieDetail);
   const { scrollY } = useViewportScroll();
-  const { data, isLoading } = useQuery<IGetMovieResult>(
-    ["movies", "nowPlaying"],
-    getMovies
-  );
+  const { data, isLoading, hasNextPage, fetchNextPage } =
+    useInfiniteQuery<IGetMovieResult>(["movies", "nowPlaying"], getMovies, {
+      getNextPageParam: (currentPage) => {
+        const nextPage = currentPage.page + 1;
+        return nextPage > currentPage.total_pages ? null : nextPage;
+      },
+    });
 
-  const { data: topData, isLoading: topLoading } = useQuery<IGetMovieResult>(
+  const {
+    data: topData,
+    isLoading: topLoading,
+    hasNextPage: topHasNextPage,
+    fetchNextPage: topFetchNextPage,
+  } = useInfiniteQuery<IGetMovieResult>(
     ["movies", "topRated"],
-    getTopRatedMovies
+    getTopRatedMovies,
+    {
+      getNextPageParam: (currentPage) => {
+        const nextPage = currentPage.page + 1;
+        return nextPage > currentPage.total_pages ? null : nextPage;
+      },
+    }
   );
 
   const {
@@ -298,9 +313,15 @@ export const Movies = () => {
       if (leaving) return;
       setBack(false);
       toggleLeaving();
-      const totalMovies = data.results.length - 1;
+      const totalMovies =
+        data.pages.map((page) => page.results).flat().length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+      if (index === maxIndex - 1) {
+        if (hasNextPage) {
+          fetchNextPage();
+        }
+      }
     }
   };
 
@@ -309,22 +330,41 @@ export const Movies = () => {
       if (leaving) return;
       setBack(false);
       toggleLeaving();
-      const totalMovies = topData.results.length - 1;
+      const totalMovies =
+        topData.pages.map((page) => page.results).flat().length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setTopIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+      if (topIndex === maxIndex - 1) {
+        if (topHasNextPage) {
+          topFetchNextPage();
+        }
+      }
     }
   };
 
-  // const decreaseIndex = () => {
-  //   if (data) {
-  //     if (leaving) return;
-  //     setBack(true);
-  //     toggleLeaving();
-  //     const totalMovies = data.results.length - 1;
-  //     const maxIndex = Math.floor(totalMovies / offset) - 1; // 3
-  //     setIndex((prev) => (prev > 0 ? prev - 1 : maxIndex));
-  //   }
-  // };
+  const decreaseIndex = () => {
+    if (data) {
+      if (leaving) return;
+      setBack(true);
+      toggleLeaving();
+      const totalMovies =
+        data.pages.map((page) => page.results).flat().length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1; // 3
+      setIndex((prev) => (prev === 0 ? maxIndex : prev - 1));
+    }
+  };
+
+  const decreaseTopIndex = () => {
+    if (topData) {
+      if (leaving) return;
+      setBack(true);
+      toggleLeaving();
+      const totalMovies =
+        topData.pages.map((page) => page.results).flat().length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1; // 3
+      setTopIndex((prev) => (prev === 0 ? maxIndex : prev - 1));
+    }
+  };
 
   const onBoxClicked = (movieId: number) => {
     history.push(`/maxflix-remaster/movies/${movieId}`);
@@ -342,26 +382,41 @@ export const Movies = () => {
         <Loader>Loading...</Loader>
       ) : (
         <>
-          <Banner bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}>
-            <Title>{data?.results[0].title}</Title>
-            <OverView>{data?.results[0].overview}</OverView>
+          <Banner
+            bgPhoto={makeImagePath(
+              data?.pages.map((page) => page.results).flat()[0].backdrop_path ||
+                DEFAULT_IMG
+            )}
+          >
+            <Title>
+              {data?.pages.map((page) => page.results).flat()[0].title}
+            </Title>
+            <OverView>
+              {data?.pages.map((page) => page.results).flat()[0].overview}
+            </OverView>
           </Banner>
           <Slider>
             <SliderTitle>상영 중인 영화</SliderTitle>
-            {/* <Prev whileHover={{ opacity: 1 }} onClick={decreaseIndex}>
+            <Prev whileHover={{ opacity: 1 }} onClick={decreaseIndex}>
               <FontAwesomeIcon icon={["fas", "chevron-left"]} size="2x" />
-            </Prev> */}
-            <AnimatePresence onExitComplete={toggleLeaving} initial={false}>
+            </Prev>
+            <AnimatePresence
+              custom={back}
+              onExitComplete={toggleLeaving}
+              initial={false}
+            >
               <Row
                 custom={back}
                 variants={rowVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                transition={{ type: "tween", duration: 1 }}
+                transition={{ ease: "easeInOut", duration: 1 }}
                 key={index}
               >
-                {data?.results
+                {data?.pages
+                  .map((page) => page.results)
+                  .flat()
                   .slice(1)
                   .slice(offset * index, offset * index + offset)
                   .map((movie) => (
@@ -371,12 +426,16 @@ export const Movies = () => {
                       variants={boxVariants}
                       whileHover="hover"
                       initial="normal"
-                      transition={{ type: "tween" }}
+                      transition={{ ease: "easeInOut" }}
                       onClick={() => onBoxClicked(movie.id)}
                     >
                       <MovieImg
                         variants={movieImgVariants}
-                        src={makeImagePath(movie.backdrop_path, "w500")}
+                        src={
+                          movie.backdrop_path
+                            ? makeImagePath(movie.backdrop_path, "w500")
+                            : DEFAULT_IMG
+                        }
                       />
 
                       <Info variants={infoVariants}>
@@ -401,7 +460,14 @@ export const Movies = () => {
 
           <Slider>
             <SliderTitle>평점 높은 순</SliderTitle>
-            <AnimatePresence onExitComplete={toggleLeaving} initial={false}>
+            <Prev whileHover={{ opacity: 1 }} onClick={decreaseTopIndex}>
+              <FontAwesomeIcon icon={["fas", "chevron-left"]} size="2x" />
+            </Prev>
+            <AnimatePresence
+              custom={back}
+              onExitComplete={toggleLeaving}
+              initial={false}
+            >
               <Row
                 custom={back}
                 variants={rowVariants}
@@ -411,7 +477,9 @@ export const Movies = () => {
                 transition={{ type: "tween", duration: 1 }}
                 key={topIndex}
               >
-                {topData?.results
+                {topData?.pages
+                  .map((page) => page.results)
+                  .flat()
                   .slice(offset * topIndex, offset * topIndex + offset)
                   .map((movie) => (
                     <Box
